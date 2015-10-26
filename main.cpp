@@ -25,16 +25,22 @@ void find_and_replace(string& source, string const& find, string const& replace)
 	}
 }
 
+//sumIt(): Sum of vector<int>
+int sumIt(vector<int> nums) {
+	int T = 0;
+	for (int i = 0; i < nums.size(); i++) {
+		T += nums[i];
+	}
+	return T;
+}
+
 //getAverage(): Calculate Average
 double getAverage(vector<int> nums) {
 	int deduction = 0;
-	double sum = 0;
+	double sum = (double)sumIt(nums);
 	for (int i = 0; i < nums.size(); i++) {
 		if (nums[i] == 999) {
 			deduction++;
-		}
-		else {
-			sum += (double)nums[i];
 		}
 	}
 	return sum / (double)(nums.size() - deduction);
@@ -172,7 +178,8 @@ bool acptlVlue(char *v) {
 		strcmp(v, "2") == 0 ||
 		strcmp(v, "3") == 0 ||
 		strcmp(v, "4") == 0 || 
-	    strcmp(v, "5") == 0 ) {
+	    strcmp(v, "5") == 0 ||
+		strcmp(v, "6") == 0) {
 		return true;
 	}
 	return false;
@@ -451,7 +458,7 @@ void createTimeSeriesTables(string &curLine, fstream *in, string oName, bool aut
 	seasonalLValues.reserve(183);
 	writeMonthly.push_back("Month & Year,Avg. High (F),Avg. Low (F),Std. Dev. High,Std. Dev. Low,CoV High,CoV Low,9F Crossed,0F Crossed,-10F Crossed,\n");
 	writeSeasonally.push_back("Season,Avg. High (F),Avg. Low (F),Std. Dev. High,Std. Dev. Low,CoV High,CoV Low,9F Crossed,0F Crossed,-10F Crossed,\n");
-	//Open The File, Read in values month by month, but only do so for October 30th - April 30th
+	//Open The File, Read in values month by month, but only do so for October 1st - April 30th
 	while (!in->eof()) {
 		getline(*in, curLine);
 		if (!okOpen) {
@@ -477,66 +484,69 @@ void createTimeSeriesTables(string &curLine, fstream *in, string oName, bool aut
 			//
 			if (reading) {
 				splitMD(curLine, &day, &month, &year);
-				if (day == 1) {
-					//New Month... Calculate Averages and Write to data...
-					for (int i = 0; i < monthlyHValues.size(); i++) {
-						if (okCountThreshold("", "", "", monthlyHValues[i], monthlyLValues[i], automate)) {
-							t1 += (monthlyHValues[i] <= 9 || monthlyLValues[i] <= 9) ? 1 : 0;
-							t2 += (monthlyHValues[i] <= 0 || monthlyLValues[i] <= 0) ? 1 : 0;
-							t3 += (monthlyHValues[i] <= -10 || monthlyLValues[i] <= -10) ? 1 : 0;
-						}
-					}
-					sprintf(tempWrite, "%i/%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,\n", pMonth, pYear, getAverage(monthlyHValues), getAverage(monthlyLValues),
-						stdDeviation(monthlyHValues), stdDeviation(monthlyLValues), coefficientOfVarience(monthlyHValues),
-						coefficientOfVarience(monthlyLValues), t1, t2, t3);
-					writeMonthly.push_back(tempWrite);
-					//Clear old data...
-					monthlyHValues.clear();
-					monthlyLValues.clear();
-					t1 = 0;
-					t2 = 0;
-					t3 = 0;
-				}
-				if (month == 10 && day == 30) {
+				if (month == 10 && day == 1) {
 					//Begin the season
 					startS = year;
 					inSeason = true;
 				}
-				//Capture the T. Values
-				tPos = curLine.find(",");
-				tPos = curLine.find(",", tPos + 1);
-				tPos = curLine.find(",", tPos + 1);
-				tPos = curLine.find(",", tPos + 1);
-				tPos2 = curLine.find(",", tPos + 1);
-				temp = curLine.substr(tPos + 1, tPos2 - (tPos + 1)).c_str();
-				find_and_replace(temp, "#", "");
-				find_and_replace(temp, "/", "");
-				if (temp.compare("NA") == 0) {
-					monthlyHValues.push_back(999);
-					if (inSeason) {
-						seasonalHValues.push_back(999);
+				if (inSeason) {
+					if (day == 1) {
+						//New Month... Calculate Averages and Write to data...
+						for (int i = 0; i < monthlyHValues.size(); i++) {
+							if (okCountThreshold("", "", "", monthlyHValues[i], monthlyLValues[i], automate)) {
+								t1 += (monthlyHValues[i] <= 9 || monthlyLValues[i] <= 9) ? 1 : 0;
+								t2 += (monthlyHValues[i] <= 0 || monthlyLValues[i] <= 0) ? 1 : 0;
+								t3 += (monthlyHValues[i] <= -10 || monthlyLValues[i] <= -10) ? 1 : 0;
+							}
+						}
+						sprintf(tempWrite, "%i/%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,\n", pMonth, pYear, getAverage(monthlyHValues), getAverage(monthlyLValues),
+							stdDeviation(monthlyHValues), stdDeviation(monthlyLValues), coefficientOfVarience(monthlyHValues),
+							coefficientOfVarience(monthlyLValues), t1, t2, t3);
+						writeMonthly.push_back(tempWrite);
+						//Clear old data...
+						monthlyHValues.clear();
+						monthlyLValues.clear();
+						t1 = 0;
+						t2 = 0;
+						t3 = 0;
 					}
-				}
-				else {
-					monthlyHValues.push_back(atoi(temp.c_str()));
-					if (inSeason) {
-						seasonalHValues.push_back(atoi(temp.c_str()));
+
+					//Capture the T. Values
+					tPos = curLine.find(",");
+					tPos = curLine.find(",", tPos + 1);
+					tPos = curLine.find(",", tPos + 1);
+					tPos = curLine.find(",", tPos + 1);
+					tPos2 = curLine.find(",", tPos + 1);
+					temp = curLine.substr(tPos + 1, tPos2 - (tPos + 1)).c_str();
+					find_and_replace(temp, "#", "");
+					find_and_replace(temp, "/", "");
+					if (temp.compare("NA") == 0) {
+						monthlyHValues.push_back(999);
+						if (inSeason) {
+							seasonalHValues.push_back(999);
+						}
 					}
-				}
-				tPos = curLine.find(",", tPos2 + 1);
-				temp2 = curLine.substr(tPos2 + 1, tPos - (tPos2 + 1)).c_str();
-				find_and_replace(temp2, "#", "");
-				find_and_replace(temp2, "/", "");
-				if (temp2.compare("NA") == 0) {
-					monthlyLValues.push_back(999);
-					if (inSeason) {
-						seasonalLValues.push_back(999);
+					else {
+						monthlyHValues.push_back(atoi(temp.c_str()));
+						if (inSeason) {
+							seasonalHValues.push_back(atoi(temp.c_str()));
+						}
 					}
-				}
-				else {
-					monthlyLValues.push_back(atoi(temp2.c_str()));
-					if (inSeason) {
-						seasonalLValues.push_back(atoi(temp2.c_str()));
+					tPos = curLine.find(",", tPos2 + 1);
+					temp2 = curLine.substr(tPos2 + 1, tPos - (tPos2 + 1)).c_str();
+					find_and_replace(temp2, "#", "");
+					find_and_replace(temp2, "/", "");
+					if (temp2.compare("NA") == 0) {
+						monthlyLValues.push_back(999);
+						if (inSeason) {
+							seasonalLValues.push_back(999);
+						}
+					}
+					else {
+						monthlyLValues.push_back(atoi(temp2.c_str()));
+						if (inSeason) {
+							seasonalLValues.push_back(atoi(temp2.c_str()));
+						}
 					}
 				}
 				//End Of X Capture
@@ -590,6 +600,249 @@ void createTimeSeriesTables(string &curLine, fstream *in, string oName, bool aut
 	std::cout << "Command '4' Completed..." << endl << endl;
 }
 
+//createMonthlyTimeSeriesTables(): Command "5": Create monthly time series tables using the data. 
+void createMonthlyTimeSeriesTables(string &curLine, fstream *in, string oName, bool automate) {
+	//Define Specific Parameters
+	bool okOpen = false, reading = false, inSeason = false, caughtInitialValues = false;
+	int month, day, year, pMonth, pYear, t1, t2, t3, startMonth, startYear;
+	string temp, temp2;
+	size_t tPos, tPos2;
+	vector<string> repLine, write;
+	vector<int> monthlyHValues, monthlyLValues, thresholdCount1, thresholdCount2, thresholdCount3, totals1, totals2, totals3;
+	char tempWrite[512];
+	//Prepare vectors.
+	monthlyHValues.reserve(31);
+	monthlyLValues.reserve(31);
+	//Open The File, Read in values month by month, but only do so for October 1st - April 30th
+	while (!in->eof()) {
+		getline(*in, curLine);
+		if (!okOpen) {
+			//Check first line for "PATCHED"
+			if (strcmp(curLine.c_str(), "PATCHED") != 0) {
+				std::cout << "Cannot perform post-fix on unpatched file, break." << endl;
+				break;
+			}
+			else {
+				std::cout << "Patched file detected, proceeding..." << endl;
+				okOpen = true;
+			}
+		}
+		repLine.push_back(curLine);
+	}
+	if (okOpen) {
+		for (int i = 0; i < repLine.size(); i++) {
+			curLine = repLine[i];
+			if (strcmp(curLine.c_str(), "END,") == 0) {
+				std::cout << "End Point Found..." << endl;
+				reading = false;
+			}
+			//
+			if (reading) {
+				splitMD(curLine, &day, &month, &year);
+				if (month == 10 && day == 1) {
+					//Begin the season
+					if (!caughtInitialValues) {
+						startYear = year;
+						startMonth = month;
+						caughtInitialValues = true;
+					}
+					inSeason = true;
+				}
+				if (inSeason) {
+					if (day == 1) {
+						//New Month... Calculate Averages and Write to data...
+						for (int i = 0; i < monthlyHValues.size(); i++) {
+							if (okCountThreshold("", "", "", monthlyHValues[i], monthlyLValues[i], automate)) {
+								t1 += (monthlyHValues[i] <= 9 || monthlyLValues[i] <= 9) ? 1 : 0;
+								t2 += (monthlyHValues[i] <= 0 || monthlyLValues[i] <= 0) ? 1 : 0;
+								t3 += (monthlyHValues[i] <= -10 || monthlyLValues[i] <= -10) ? 1 : 0;
+							}
+						}
+						thresholdCount1.push_back(t1);
+						thresholdCount2.push_back(t2);
+						thresholdCount3.push_back(t3);
+						//Clear old data...
+						monthlyHValues.clear();
+						monthlyLValues.clear();
+						t1 = 0;
+						t2 = 0;
+						t3 = 0;
+					}
+					//Capture the T. Values
+					tPos = curLine.find(",");
+					tPos = curLine.find(",", tPos + 1);
+					tPos = curLine.find(",", tPos + 1);
+					tPos = curLine.find(",", tPos + 1);
+					tPos2 = curLine.find(",", tPos + 1);
+					temp = curLine.substr(tPos + 1, tPos2 - (tPos + 1)).c_str();
+					find_and_replace(temp, "#", "");
+					find_and_replace(temp, "/", "");
+					if (temp.compare("NA") == 0) {
+						monthlyHValues.push_back(999);
+					}
+					else {
+						monthlyHValues.push_back(atoi(temp.c_str()));
+					}
+					tPos = curLine.find(",", tPos2 + 1);
+					temp2 = curLine.substr(tPos2 + 1, tPos - (tPos2 + 1)).c_str();
+					find_and_replace(temp2, "#", "");
+					find_and_replace(temp2, "/", "");
+					if (temp2.compare("NA") == 0) {
+						monthlyLValues.push_back(999);
+					}
+					else {
+						monthlyLValues.push_back(atoi(temp2.c_str()));
+					}
+				}
+				//End Of X Capture
+				if (month == 4 && day == 30) {
+					//End the season
+					inSeason = false;
+				}
+				//Previous Values...
+				pMonth = month;
+				pYear = year;
+			}
+			//
+			if (strcmp(curLine.c_str(), "START,") == 0) {
+				std::cout << "Starting Point Found..." << endl;
+				reading = true;
+			}
+		}
+		//Clean First...
+		for (int i = 0; i < thresholdCount1.size(); i++) {
+			if (thresholdCount1[i] < 0 || thresholdCount1[i] > 31) {
+				thresholdCount1[i] = 0;
+			}
+			if (thresholdCount2[i] < 0 || thresholdCount2[i] > 31) {
+				thresholdCount2[i] = 0;
+			}
+			if (thresholdCount3[i] < 0 || thresholdCount3[i] > 31) {
+				thresholdCount3[i] = 0;
+			}
+		}
+		int thresholds[3] = {9, 0, -10};
+		int tTotal = 0;
+		int seasonalCounter = 0;
+		int yearCounter = 0;
+		for (int i = 0; i < 3; i++) {
+			tTotal = 0;
+			yearCounter = 0;
+			seasonalCounter = 0;
+			sprintf(tempWrite, "%i", thresholds[i]);
+			temp = "Monthly Amount of Times for " + string(tempWrite) + "F Threshold,\nYear,Oct.,Nov.,Dec.,Jan.,Feb.,Mar.,Apr.,Total,\n";
+			write.push_back(temp);
+			//Loop
+			switch (i) {
+				case 0:
+					for (int k = 0; k < thresholdCount1.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount1[k];
+						sprintf(tempWrite, "%i,", thresholdCount1[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == 7) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals1.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
+					}
+					break;
+				case 1:
+					for (int k = 0; k < thresholdCount2.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount2[k];
+						sprintf(tempWrite, "%i,", thresholdCount2[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == 7) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals2.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
+					}
+					break;
+				case 2:
+					for (int k = 0; k < thresholdCount3.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount3[k];
+						sprintf(tempWrite, "%i,", thresholdCount3[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == 7) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals3.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
+					}
+					break;
+			}
+			write.push_back("\n\n");
+		}
+		//Final Calculations
+		write.push_back("Final Calculations,\nCalculations for 9F:,\n");
+		sprintf(tempWrite, "Total: ,%i,\n", sumIt(totals1));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Average: ,%f,\n", getAverage(totals1));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Std. Deviation: ,%f,\n", stdDeviation(totals1));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "CoV: ,%f,\n", coefficientOfVarience(totals1));
+		write.push_back(string(tempWrite));
+		write.push_back("Calculations for 0F:,\n");
+		sprintf(tempWrite, "Total: ,%i,\n", sumIt(totals2));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Average: ,%f,\n", getAverage(totals2));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Std. Deviation: ,%f,\n", stdDeviation(totals2));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "CoV: ,%f,\n", coefficientOfVarience(totals2));
+		write.push_back(string(tempWrite));
+		write.push_back("Calculations for -10F:,\n");
+		sprintf(tempWrite, "Total: ,%i,\n", sumIt(totals3));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Average: ,%f,\n", getAverage(totals3));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "Std. Deviation: ,%f,\n", stdDeviation(totals3));
+		write.push_back(string(tempWrite));
+		sprintf(tempWrite, "CoV: ,%f,\n", coefficientOfVarience(totals3));
+		write.push_back(string(tempWrite));
+
+		//Write the output file...
+		std::cout << "Opening file: " << oName.c_str() << endl;
+		fstream out(oName.c_str(), ios::out);
+		for (int i = 0; i < write.size(); i++) {
+			out << write[i];
+		}
+		out.close();
+	}
+	else {
+		std::cout << "Cannot perform this operation, file is unpatched..." << endl;
+	}
+	std::cout << "Command '5' Completed..." << endl << endl;
+}
+
 int main() {
 	char *charInput = new char[256];
 	strcpy(charInput, "FILLFILLFILL");
@@ -610,7 +863,7 @@ int main() {
 
 		charInput = new char[256];
 		std::cout << "MET 531 CSV File Patcher" << endl << "By Robert F." << endl;
-		std::cout << "Version a0.26" << endl << endl;
+		std::cout << "Version a0.30" << endl << endl;
 		std::cout << "Please place the CSV file you wish to open in the same folder as this .exe" << endl;
 		std::cout << "Input CSV File Name (Include the .csv): ";
 		cin.getline(charInput, 256);
@@ -622,6 +875,7 @@ int main() {
 		find_and_replace(temp, "_scored", "");
 		find_and_replace(temp, "_tanalysis", "");
 		find_and_replace(temp, "_timesrs", "");
+		find_and_replace(temp, "_monthlytimesrs", "");
 
 		fName.push_back(temp);
 		temp = "";
@@ -634,6 +888,8 @@ int main() {
 		temp = fName[1].substr(0, dotPos) + "_tanalysis" + fName[1].substr(dotPos, fName[1].length());
 		oName.push_back(temp);
 		temp = fName[1].substr(0, dotPos) + "_timesrs" + fName[1].substr(dotPos, fName[1].length());
+		oName.push_back(temp);
+		temp = fName[1].substr(0, dotPos) + "_monthlytimesrs" + fName[1].substr(dotPos, fName[1].length());
 		oName.push_back(temp);
 		std::cout << endl << "Got " << fName[0] << endl << "Correct (Y/N)?: ";
 
@@ -656,14 +912,14 @@ int main() {
 		}
 		std::cout << endl;
 		std::cout << "Select Mode:\n1: Clean Missing Data (Delete 'M')\n2: Append Thresholds to Data, Calculate Scores\n3: Create Score Table" << 
-			"\n4: Create Monthly & Yearly Average Tables (Time Series)\n\n5: Perform all Tasks" << endl;
+			"\n4: Create Monthly & Seasonal Average Tables (Time Series)\n5: Create Monthly Average Tables (Time Series)\n\n6: Perform all Tasks" << endl;
 		std::cout << "Selection: ";
 		cin.getline(charInput, 256);
 	} while (!acptlVlue(charInput));
 
 	bool autom = false;
 	char *autoInput = new char[2];
-	if (strcmp(charInput, "2") == 0 || strcmp(charInput, "4") == 0 || strcmp(charInput, "5") == 0) {
+	if (strcmp(charInput, "2") == 0 || strcmp(charInput, "4") == 0 || strcmp(charInput, "5") == 0 || strcmp(charInput, "6") == 0) {
 		std::cout << endl << "Your selection has bad-data detection code embedded" << endl <<
 			"Would you like to automate the user validation process (Temp = 0F)?" << endl <<
 			"Automation will mark any values with a TDelta of 20 as bad. Continue? (Y/N) ";
@@ -704,8 +960,12 @@ int main() {
 	else if (strcmp(charInput, "4") == 0) {
 		createTimeSeriesTables(curLine, in, oName[3], autom);
 	}
-	//5: Perform all tasks
+	//5: Create Overall Monthly Time Series Tables
 	else if (strcmp(charInput, "5") == 0) {
+		createMonthlyTimeSeriesTables(curLine, in, oName[4], autom);
+	}
+	//6: Perform all tasks
+	else if (strcmp(charInput, "6") == 0) {
 		cleanFile(curLine, counter, in, oName[0]);
 		fstream *in2 = new fstream(oName[0], ios::in);
 		calculateScores(curLine, charInput, counter, in2, oName[1], autom);
@@ -719,6 +979,10 @@ int main() {
 		createTimeSeriesTables(curLine, in4, oName[3], autom);
 		in4->close();
 		delete in4;
+		fstream *in5 = new fstream(oName[1], ios::in);
+		createMonthlyTimeSeriesTables(curLine, in5, oName[4], autom);
+		in5->close();
+		delete in5;
 	}
 	in->close();
 	delete in;
