@@ -30,7 +30,7 @@ int main() {
 	vector<string> repLine;
 
 	std::cout << "MET 531 CSV File Patcher" << endl << "By Robert F." << endl;
-	std::cout << "Version b1.01" << endl << endl;
+	std::cout << "Version b1.02" << endl << endl;
 
 	do {
 		do {

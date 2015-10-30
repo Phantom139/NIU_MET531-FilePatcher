@@ -136,36 +136,16 @@ namespace Tools {
 
 	//splitMD(): Splits a string input of MM/DD/YYYY or DD/MM/YYYY into it's correct integer components
 	void splitMD(string input, int *day, int *mo, int *yr) {
-		string orig, temp, temp2;
-		orig = input.substr(0, input.find(","));
-		if (orig.find("/") != string::npos) {
-			//MM/DD/YYYY Format
-			temp = orig.substr(0, orig.find("/"));
-			*mo = atoi(temp.c_str());
-			temp = orig.substr(orig.find("/") + 1, orig.length());
-			temp2 = temp.substr(0, temp.find("/"));
-			*day = atoi(temp2.c_str());
-			temp = temp.substr(temp.find("/") + 1, temp.length());
-			if (*yr != -1) {
-				*yr = atoi(temp.c_str());
-			}
+		//MM/DD/YYYY
+		if (input.find("/") != string::npos) {
+			sscanf(input.c_str(), "%2d/%2d/%4d", mo, day, yr);
+		}
+		//YYYY-MM-DD
+		else if (input.find("-") != string::npos) {
+			sscanf(input.c_str(), "%4d-%2d-%2d", yr, mo, day);
 		}
 		else {
-			//XX-YY-ZZ Format
-			temp = orig.substr(0, orig.find("-"));
-			//Check if YYYY is first...
-			if (temp.length() > 2) {
-				//Are we catching the year value?
-				if (*yr != -1) {
-					*yr = atoi(temp.c_str());
-				}
-				temp2 = temp.substr(temp.find("-") + 1, temp.length());
-				temp = temp2;
-			}
-			*mo = atoi(temp.c_str());
-			temp2 = temp2.substr(temp2.find("-") + 1, temp2.length());
-			temp = temp2.substr(0, temp2.find("-"));
-			*day = atoi(temp.c_str());
+			//Error...
 		}
 	}
 };

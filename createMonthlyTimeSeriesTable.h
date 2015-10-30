@@ -42,7 +42,8 @@ void createMonthlyTimeSeriesTables(string &curLine, fstream *in, string oName, b
 			}
 			//
 			if (reading) {
-				Tools::splitMD(curLine, &day, &month, &year);
+				temp = curLine.substr(0, curLine.find(","));
+				Tools::splitMD(temp, &day, &month, &year);
 				if (month == 10 && day == 1) {
 					//Begin the season
 					if (!caughtInitialValues) {

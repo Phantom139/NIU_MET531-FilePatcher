@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "tools.h"
+#include "data.h"
 
 #ifndef CLEANFILE_H
 #define CLEANFILE_H
@@ -18,7 +19,7 @@ void cleanFile(string &curLine, int counter, fstream *in, string oName) {
 		//std::cout << "Read: " << curLine.c_str();
 		//Replace "M" with " "
 		if (curLine.find(",M") != string::npos) {
-			std::cout << "Found 'M': " << curLine.c_str() << endl;
+			//std::cout << "Found 'M': " << curLine.c_str() << endl;
 			counter++;
 		}
 		Tools::find_and_replace(curLine, ",M", ",#N/A#");
@@ -54,7 +55,13 @@ void cleanFile(string &curLine, int counter, fstream *in, string oName) {
 				sprintf(cTmp, "%i", min);
 				temp2 = cTmp;
 			}
-			temp3 = repLine[i].substr(0, tPos3) + "," + temp + "," + temp2 + ",";
+			//Write
+			if (temp.compare("0") != 0 || temp2.compare("0") != 0) {
+				temp3 = repLine[i].substr(0, tPos3) + "," + temp + "," + temp2 + ",";
+			}
+			else {
+				temp3 = repLine[i];
+			}
 			out << temp3.c_str() << "\n";
 		}
 		else {

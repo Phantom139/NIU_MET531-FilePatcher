@@ -10,14 +10,14 @@ Data::Data(int count) {
 }
 
 //Scan the first line of data to fetch the input.
-void Data::scanFirstDataLine(string line) {
+int Data::scanFirstDataLine(string line) {
 	int counter = 0;
 	string temp = line;
 	while (temp.find(",") != string::npos) {
 		counter++;
 		temp = temp.substr(temp.find(","), temp.length());
 	}
-	fieldCount = counter;
+	return counter;
 }
 
 void Data::addData(double doubleVal) {

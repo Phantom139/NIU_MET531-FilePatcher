@@ -1,5 +1,6 @@
-###MET 531 File Patcher###
+#MET 531 File Patcher#
 ##Robert C. Fritzen##
+###Current Version: Beta (b) 1.02###
 
 ##Instructions##
 1. Download the .zip file.

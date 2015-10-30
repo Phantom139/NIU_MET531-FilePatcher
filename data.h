@@ -16,13 +16,14 @@ class Data {
 	public:
 		Data(int count = -1);
 
-		void scanFirstDataLine(string line);
+		static int scanFirstDataLine(string line);
 		void addData(double doubleVal = -999);
 		void emptyData();
 		bool lineIsEnd(string line);
 
 		int getFields() { return fieldCount; }
 		vector<double> getData() { return fields; }
+		void setCount(int i) { fieldCount = i; }
 
 	private:
 		int fieldCount;

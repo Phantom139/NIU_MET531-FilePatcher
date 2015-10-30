@@ -44,7 +44,8 @@ void createThresholdTable(string &curLine, fstream *in, string oName) {
 			//If we need to read the line, then do it.
 			if (read) {
 				index = 0;
-				Tools::splitMD(curLine, &day, &month, &yr);
+				temp = curLine.substr(0, curLine.find(","));
+				Tools::splitMD(temp, &day, &month, &yr);
 				for (int y = 0; y < month - 1; y++) {
 					index += constants::dim[y];
 				}
