@@ -21,8 +21,8 @@ void cleanFile(string &curLine, int counter, fstream *in, string oName) {
 		if (curLine.find(",M") != string::npos) {
 			//std::cout << "Found 'M': " << curLine.c_str() << endl;
 			counter++;
-		}
-		Tools::find_and_replace(curLine, ",M", ",NA()");
+		} 
+		Tools::find_and_replace(curLine, ",M", ",=NA()");
 		repLine.push_back(curLine);
 	}
 	//Write...
