@@ -40,7 +40,12 @@ namespace Tools {
 				deduction++;
 			}
 		}
-		return sum / (double)(nums.size() - deduction);
+		try {
+			return sum / (double)(nums.size() - deduction);
+		}
+		catch (std::exception e) {
+			std::cout << "Cannot Divide By Zero" << endl;
+		}
 	}
 
 	//stdDeviation(): Calculate Standard Deviation
@@ -71,15 +76,11 @@ namespace Tools {
 	//okCountThreshold(): Quick string to number test to make sure the data isn't counting a #N/A# as a zero.
 	bool okCountThreshold(string fullInput, string strMax, string strMin, int maxTemp, int minTemp, bool automate = false) {
 		if (fullInput.compare("") != 0) {
-			find_and_replace(strMax, "#", "");
-			find_and_replace(strMax, "/", "");
-			find_and_replace(strMin, "#", "");
-			find_and_replace(strMin, "/", "");
-			if (strMax.compare("NA") == 0 || strMax.compare("") == 0) {
+			if (strMax.compare("=NA()") == 0 || strMax.compare("") == 0) {
 				std::cout << "Data Point: " << fullInput << " Has Been Filtered as Bad TMax(N/A, '')" << endl;
 				return false;
 			}
-			if (strMin.compare("NA") == 0 || strMin.compare("") == 0) {
+			if (strMin.compare("=NA()") == 0 || strMin.compare("") == 0) {
 				std::cout << "Data Point: " << fullInput << " Has Been Filtered as Bad TMin(N/A, '')" << endl;
 				return false;
 			}

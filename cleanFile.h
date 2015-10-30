@@ -22,7 +22,7 @@ void cleanFile(string &curLine, int counter, fstream *in, string oName) {
 			//std::cout << "Found 'M': " << curLine.c_str() << endl;
 			counter++;
 		}
-		Tools::find_and_replace(curLine, ",M", ",#N/A#");
+		Tools::find_and_replace(curLine, ",M", ",NA()");
 		repLine.push_back(curLine);
 	}
 	//Write...
@@ -46,8 +46,8 @@ void cleanFile(string &curLine, int counter, fstream *in, string oName) {
 			if (!Tools::okCountThreshold(repLine[i], temp, temp2, max, min, true)) {
 				std::cout << "Bad data point thrown..." << endl;
 				counter++;
-				temp = "#N/A#";
-				temp2 = "#N/A#";
+				temp = "=NA()";
+				temp2 = "=NA()";
 			}
 			else {
 				sprintf(cTmp, "%i", max);

@@ -34,9 +34,7 @@ void calculateScores(string &curLine, char *charInput, int counter, fstream *in,
 				tPos = curLine.find(",", tPos + 1);
 				tPos2 = curLine.find(",", tPos + 1);
 				temp = curLine.substr(tPos + 1, tPos2 - (tPos + 1)).c_str();
-				Tools::find_and_replace(temp, "#", "");
-				Tools::find_and_replace(temp, "/", "");
-				if (temp.compare("NA") == 0) {
+				if (temp.compare("=NA()") == 0) {
 					tMax = 999;
 				}
 				else {
@@ -44,9 +42,7 @@ void calculateScores(string &curLine, char *charInput, int counter, fstream *in,
 				}
 				tPos = curLine.find(",", tPos2 + 1);
 				temp2 = curLine.substr(tPos2 + 1, tPos - (tPos2 + 1)).c_str();
-				Tools::find_and_replace(temp2, "#", "");
-				Tools::find_and_replace(temp2, "/", "");
-				if (temp2.compare("NA") == 0) {
+				if (temp2.compare("=NA()") == 0) {
 					tMin = 999;
 				}
 				else {
