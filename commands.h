@@ -1,0 +1,5 @@
+#include "cleanFile.h"
+#include "calculateScores.h"
+#include "createThresholdTable.h"
+#include "createTimeSeriesTable.h"
+#include "createMonthlyTimeSeriesTable.h"
