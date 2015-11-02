@@ -22,6 +22,36 @@ namespace Tools {
 		}
 	}
 
+	//colVectorize(): Move a single column to a vector<int>
+	vector<int> colVectorize(vector<int> nums, int colNum, int colCount) {
+		vector<int> output;
+		int colNumInt = 0;
+		for (int i = 0; i < nums.size(); i++) {
+			if (colNumInt == colNum) {
+				output.push_back(nums[i]);
+			}
+			colNumInt++;
+			if (colNumInt == colCount) {
+				colNumInt = 0;
+			}
+		}
+		return output;
+	}
+
+	//colCount(): Sum of column of int
+	int colCount(vector<int> nums, int colNum, int colCount) {
+		int T = 0, colNumInt = 0;
+		for (int i = 0; i < nums.size(); i++) {
+			if (colNumInt == colNum) {
+				T += nums[i];
+			}
+			colNumInt++;
+			if (colNumInt == colCount) {
+				colNumInt = 0;
+			}
+		}
+	}
+
 	//sumIt(): Sum of vector<int>
 	int sumIt(vector<int> nums) {
 		int T = 0;
@@ -70,6 +100,9 @@ namespace Tools {
 		double ave, stdDev;
 		ave = getAverage(nums);
 		stdDev = stdDeviation(nums);
+		if (ave == 0 || stdDev == 0) {
+			return 0;
+		}
 		return stdDev / ave;
 	}
 

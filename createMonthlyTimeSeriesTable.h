@@ -7,12 +7,13 @@
 //createMonthlyTimeSeriesTables(): Command "5": Create monthly time series tables using the data. 
 void createMonthlyTimeSeriesTables(string &curLine, fstream *in, string oName, bool automate) {
 	//Define Specific Parameters
+	const int monthCount = 7; //Used for post-analysis calcs
 	bool okOpen = false, reading = false, inSeason = false, caughtInitialValues = false;
 	int month, day, year, pMonth, pYear, t1, t2, t3, startMonth, startYear;
 	string temp, temp2;
 	size_t tPos, tPos2;
 	vector<string> repLine, write;
-	vector<int> monthlyHValues, monthlyLValues, thresholdCount1, thresholdCount2, thresholdCount3, totals1, totals2, totals3;
+	vector<int> tempVector, monthlyHValues, monthlyLValues, thresholdCount1, thresholdCount2, thresholdCount3, totals1, totals2, totals3;
 	char tempWrite[512];
 	//Prepare vectors.
 	monthlyHValues.reserve(31);
@@ -126,82 +127,159 @@ void createMonthlyTimeSeriesTables(string &curLine, fstream *in, string oName, b
 		int tTotal = 0;
 		int seasonalCounter = 0;
 		int yearCounter = 0;
+		//Start Row is always 3
 		for (int i = 0; i < 3; i++) {
 			tTotal = 0;
 			yearCounter = 0;
 			seasonalCounter = 0;
 			sprintf(tempWrite, "%i", thresholds[i]);
-			temp = "Monthly Amount of Times for " + string(tempWrite) + "F Threshold,\nYear,Oct.,Nov.,Dec.,Jan.,Feb.,Mar.,Apr.,Total,\n";
+			temp = "Monthly Amount of Times for " + string(tempWrite) + "F Threshold,\nStart Year,Oct.,Nov.,Dec.,Jan.,Feb.,Mar.,Apr.,Total,\n";
 			write.push_back(temp);
 			//Loop
 			switch (i) {
-			case 0:
-				for (int k = 0; k < thresholdCount1.size(); k++) {
-					if (seasonalCounter == 0) {
-						sprintf(tempWrite, "%i,", startYear + yearCounter);
-						temp = tempWrite;
+				case 0:
+					for (int k = 0; k < thresholdCount1.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount1[k];
+						sprintf(tempWrite, "%i,", thresholdCount1[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == monthCount) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals1.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
 					}
-					tTotal += thresholdCount1[k];
-					sprintf(tempWrite, "%i,", thresholdCount1[k]);
-					temp += tempWrite;
-					seasonalCounter++;
-					if (seasonalCounter == 7) {
-						seasonalCounter = 0;
-						yearCounter++;
-						sprintf(tempWrite, "%i,", tTotal);
-						temp += string(tempWrite) + ",\n";
-						totals1.push_back(tTotal);
-						tTotal = 0;
-						write.push_back(temp);
+					//Other calculations
+					temp = "Average:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount1, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::getAverage(tempVector));
+						temp += string(tempWrite);
 					}
-				}
-				break;
-			case 1:
-				for (int k = 0; k < thresholdCount2.size(); k++) {
-					if (seasonalCounter == 0) {
-						sprintf(tempWrite, "%i,", startYear + yearCounter);
-						temp = tempWrite;
+					sprintf(tempWrite, "%f,", Tools::getAverage(totals1));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "Std. Dev.:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount1, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::stdDeviation(tempVector));
+						temp += string(tempWrite);
 					}
-					tTotal += thresholdCount2[k];
-					sprintf(tempWrite, "%i,", thresholdCount2[k]);
-					temp += tempWrite;
-					seasonalCounter++;
-					if (seasonalCounter == 7) {
-						seasonalCounter = 0;
-						yearCounter++;
-						sprintf(tempWrite, "%i,", tTotal);
-						temp += string(tempWrite) + ",\n";
-						totals2.push_back(tTotal);
-						tTotal = 0;
-						write.push_back(temp);
+					sprintf(tempWrite, "%f,", Tools::stdDeviation(totals1));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "CoV:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount1, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(tempVector));
+						temp += string(tempWrite);
 					}
-				}
-				break;
-			case 2:
-				for (int k = 0; k < thresholdCount3.size(); k++) {
-					if (seasonalCounter == 0) {
-						sprintf(tempWrite, "%i,", startYear + yearCounter);
-						temp = tempWrite;
+					sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(totals1));
+					write.push_back(temp + string(tempWrite) + "\n");
+					break;
+				case 1:
+					for (int k = 0; k < thresholdCount2.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount2[k];
+						sprintf(tempWrite, "%i,", thresholdCount2[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == monthCount) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals2.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
 					}
-					tTotal += thresholdCount3[k];
-					sprintf(tempWrite, "%i,", thresholdCount3[k]);
-					temp += tempWrite;
-					seasonalCounter++;
-					if (seasonalCounter == 7) {
-						seasonalCounter = 0;
-						yearCounter++;
-						sprintf(tempWrite, "%i,", tTotal);
-						temp += string(tempWrite) + ",\n";
-						totals3.push_back(tTotal);
-						tTotal = 0;
-						write.push_back(temp);
+					//Other calculations
+					temp = "Average:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount2, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::getAverage(tempVector));
+						temp += string(tempWrite);
 					}
-				}
-				break;
+					sprintf(tempWrite, "%f,", Tools::getAverage(totals2));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "Std. Dev.:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount2, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::stdDeviation(tempVector));
+						temp += string(tempWrite);
+					}
+					sprintf(tempWrite, "%f,", Tools::stdDeviation(totals2));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "CoV:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount2, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(tempVector));
+						temp += string(tempWrite);
+					}
+					sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(totals2));
+					write.push_back(temp + string(tempWrite) + "\n");
+					break;
+				case 2:
+					for (int k = 0; k < thresholdCount3.size(); k++) {
+						if (seasonalCounter == 0) {
+							sprintf(tempWrite, "%i,", startYear + yearCounter);
+							temp = tempWrite;
+						}
+						tTotal += thresholdCount3[k];
+						sprintf(tempWrite, "%i,", thresholdCount3[k]);
+						temp += tempWrite;
+						seasonalCounter++;
+						if (seasonalCounter == monthCount) {
+							seasonalCounter = 0;
+							yearCounter++;
+							sprintf(tempWrite, "%i,", tTotal);
+							temp += string(tempWrite) + ",\n";
+							totals3.push_back(tTotal);
+							tTotal = 0;
+							write.push_back(temp);
+						}
+					}
+					//Other calculations
+					temp = "Average:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount3, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::getAverage(tempVector));
+						temp += string(tempWrite);
+					}
+					sprintf(tempWrite, "%f,", Tools::getAverage(totals3));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "Std. Dev.:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount3, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::stdDeviation(tempVector));
+						temp += string(tempWrite);
+					}
+					sprintf(tempWrite, "%f,", Tools::stdDeviation(totals3));
+					write.push_back(temp + string(tempWrite) + "\n");
+					temp = "CoV:,";
+					for (int i = 0; i < monthCount; i++) {
+						tempVector = Tools::colVectorize(thresholdCount3, i, monthCount);
+						sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(tempVector));
+						temp += string(tempWrite);
+					}
+					sprintf(tempWrite, "%f,", Tools::coefficientOfVarience(totals3));
+					write.push_back(temp + string(tempWrite) + "\n");
+					break;
 			}
 			write.push_back("\n\n");
 		}
 		//Final Calculations
+		/*
 		write.push_back("Final Calculations,\nCalculations for 9F:,\n");
 		sprintf(tempWrite, "Total: ,%i,\n", Tools::sumIt(totals1));
 		write.push_back(string(tempWrite));
@@ -229,6 +307,7 @@ void createMonthlyTimeSeriesTables(string &curLine, fstream *in, string oName, b
 		write.push_back(string(tempWrite));
 		sprintf(tempWrite, "CoV: ,%f,\n", Tools::coefficientOfVarience(totals3));
 		write.push_back(string(tempWrite));
+		*/
 
 		//Write the output file...
 		std::cout << "Opening file: " << oName.c_str() << endl;
