@@ -64,3 +64,28 @@
 ##Other Charts##
 * For the Threshold analysis, you plot the date versus the three probability columns
 ![](https://github.com/Phantom139/NIU_MET531-FilePatcher/blob/master/images/17.jpg)
+
+##Time Series##
+To plot the time series as needed by our project, you'll need to make use of the generated _monthlytres.csv file.
+
+1. The overall steps are similar, with some minor adjustments. First, validate the data and fix any "problems" in it.
+![](https://github.com/Phantom139/NIU_MET531-FilePatcher/blob/master/images/18.jpg)
+
+2. Select the Year column and the Total column (ONLY DO THIS FOR 9F, DO NOT SELECT MULTIPLE DATA SERIES), Once done, select the insert button followed by the 'Recommended Charts' button. It should show you a plot with years on the bottom and values on the left, select it and click OK.
+![](https://github.com/Phantom139/NIU_MET531-FilePatcher/blob/master/images/19.jpg)
+
+3. To add the other series, we'll need to enter the chart's data. Right click on the chart and click the Select Data button
+![](https://github.com/Phantom139/NIU_MET531-FilePatcher/blob/master/images/20.jpg)
+
+4. Click the "Add" button 
+
+5. Start by deleting both fields in the box.
+
+6. In the lower field entry box, click the chart select button (blue with two red arrows), then scroll down to 0F and select the FIRST VALUE, then drag it over the remaining values
+![](https://github.com/Phantom139/NIU_MET531-FilePatcher/blob/master/images/21.jpg)
+
+7. Name the field and click OK.
+
+8. Repeat steps 4 - 7 for -10F.
+
+9. Format the chart as we did for the probability, using three shades of blue where the darker tones signify deeper thresholds.
